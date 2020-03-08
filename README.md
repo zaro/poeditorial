@@ -18,7 +18,7 @@ The general configuration looks like this :
   "project-name": {
     "format": "key_value_json",
     "updating" : "terms",
-    "languages:{
+    "languages":{
       "languageKey1": "translationFilePath1",
       "languageKey2": "translationFilePath2"
       }
