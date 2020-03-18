@@ -1,6 +1,9 @@
 test-project:
-  format: key_value_json
-  updating: terms
+  defaults:
+    format: key_value_json
+    updating: terms
   languages:
-    en: en.json
+    en:
+      file: en.json
+      updating: terms_translations
     de: de.json

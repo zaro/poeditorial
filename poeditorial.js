@@ -65,22 +65,48 @@ function getConfig(){
     }
     const {config = {}, filepath} = foundConfig;
     const basePath = path.dirname(filepath);
+    const normalizedConfig = {};
     for(const [projectName, projectConfig] of Object.entries(config)){
-        if(!('format' in projectConfig)) {
-            console.error(`Format is not defined for project ${projectName}`)
-            process.exit(1)
-        }
         if(!('languages' in projectConfig)) {
             console.error(`No languages defined for project ${projectName}`)
             process.exit(1)
         }
-        if(!('updating' in projectConfig)) {
-            console.error(`Update mode not defined for project ${projectName}`)
+        if(typeof projectConfig['languages'] !== 'object') {
+            console.error(`languages must be object for project ${projectName}`)
             process.exit(1)
+        }
+        const defaults = projectConfig['defaults'] || {};
+        const languagesConfig = {};
+        for(const [language, languageConfig] of Object.entries(projectConfig['languages'])){
+            let updatedConfig = {...defaults};
+            if(typeof languageConfig === 'string'){
+                updatedConfig.file = languageConfig
+            } else {
+                updatedConfig = {
+                    ...updatedConfig,
+                    ...languageConfig,
+                }
+            }
+            languagesConfig[language] = updatedConfig;
+            if(!('format' in updatedConfig)) {
+                console.error(`'format' is not defined for project ${projectName} language ${language}`)
+                process.exit(1)
+            }
+            if(!('updating' in updatedConfig)) {
+                console.error(`'update' not defined for project ${projectName} language ${language}`)
+                process.exit(1)
+            }
+            if(!('file' in updatedConfig)) {
+                console.error(`'file' not specified for project ${projectName} language ${language}`)
+                process.exit(1)
+            }
+        }
+        normalizedConfig[projectName] = {
+            'languages': languagesConfig,
         }
     }
     return {
-        config,
+        config: normalizedConfig,
         basePath
     }
 }
@@ -145,9 +171,9 @@ const commands = {
 
         for(const [projectName, projectConfig] of Object.entries(config)){
             const project = projects[projectName];
-            for(const [language, file] of Object.entries(projectConfig.languages)){
+            for(const [language, languageConfig] of Object.entries(projectConfig.languages)){
                 exportUrlsPromises.push(
-                    exportFileUrl(project.id, language, projectConfig.format).then(
+                    exportFileUrl(project.id, language, languageConfig.format).then(
                         url => ({id: project.id, name: project.name, url, language})
                     )
                 )
@@ -156,7 +182,7 @@ const commands = {
         const exportUrls = await Promise.all(exportUrlsPromises);
         const downloads = [];
         for(const exportUrl of exportUrls){
-            const destination = getDownloadPath(config[exportUrl.name].languages[exportUrl.language]);
+            const destination = getDownloadPath(config[exportUrl.name].languages[exportUrl.language].file);
             console.log(`[${exportUrl.name}] Download ${exportUrl.url} -> ${destination}`)
             downloads.push(
                 downloadFile(exportUrl.url, destination)
@@ -179,8 +205,8 @@ const commands = {
 
         let wait30s = false;
         for(const [projectName, projectConfig] of Object.entries(config)){
-            for(const [language, file] of Object.entries(projectConfig.languages)){
-                const source = getDownloadPath(file);
+            for(const [language, languageConfig] of Object.entries(projectConfig.languages)){
+                const source = getDownloadPath(languageConfig.file);
                 if(!fs.existsSync(source)){
                     console.error(source, "doesn't exist");
                     process.exit(1)
@@ -193,9 +219,9 @@ const commands = {
                     console.log(`Sleep 30s ...`);
                     await new Promise(resolve => setTimeout(resolve, WAIT_BETWEEN_UPLOADS_SECONDS * 1000));
                 }
-                console.log(`[${projectName}] Upload ${source}`);
+                console.log(`[${projectName}] Upload ${source} with mode ${languageConfig.updating}`);
                 try {
-                    const result = await uploadFile(projectId, language, source, projectConfig.updating);
+                    const result = await uploadFile(projectId, language, source, languageConfig.updating);
                     wait30s = true;
                 } catch(error) {
                     console.error('Upload failed!', error)

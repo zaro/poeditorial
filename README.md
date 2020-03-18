@@ -16,32 +16,45 @@ The general configuration looks like this :
 ```json
 {
   "project-name": {
-    "format": "key_value_json",
-    "updating" : "terms",
+    "defaults":{
+      "format": "key_value_json",
+      "updating" : "terms",
+    },
     "languages":{
       "languageKey1": "translationFilePath1",
-      "languageKey2": "translationFilePath2"
+      "languageKey2": {
+        "updating" : "terms_translations",
+        "file": "translationFilePath2"
+      }
       }
   },
   ...
 }
 ```
-
 For supported formats check : https://poeditor.com/docs/api#projects_export
 Supported updating values are here : https://poeditor.com/docs/api#projects_upload
+
+File paths can be absolute or relative to the directory where configuration is found.
 
 Example using .poeditorialrc:
 
 ```yaml
 test-project:
-  format: key_value_json
-  updating: terms
+  defaults:
+    format: key_value_json
+    updating: terms
   languages:
-    en: en.json
+    en:
+      file: en.json
+      updating: terms_translations
     de: de.json
 ```
 
-File paths can be absolute or relative to the directory where configuration is found.
+The above file will set default format `key_value_json` and update mode `terms` for all files
+and define `en` and `de` languages, where the German file will use the default settings and
+the English one will have different updating mode. This will result in uploading only terms for German
+and terms and translations for English.
+
 
 POeditor API token can be specified either via `--access-token` or environment variable `POEDITOR_TOKEN`
 
