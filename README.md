@@ -48,12 +48,16 @@ test-project:
       file: en.json
       updating: terms_translations
     de: de.json
+    fr:
+      file: fr.json
+      updating: skip
 ```
 
 The above file will set default format `key_value_json` and update mode `terms` for all files
-and define `en` and `de` languages, where the German file will use the default settings and
-the English one will have different updating mode. This will result in uploading only terms for German
-and terms and translations for English.
+and define `en`,`de` and `fr` languages, where the German file will use the default settings and
+the English one will have different updating mode and the French will never be downloaded.
+This will result in uploading only terms for German,  terms and translations for English,
+and skipping upload for french.
 
 
 POeditor API token can be specified either via `--access-token` or environment variable `POEDITOR_TOKEN`
@@ -71,12 +75,14 @@ poeditorial list --all # List all project
 ## Download translations
 
 ```shell
-poeditorial export
+poeditorial export # export all configured projects
+poeditorial export test-project # export only test-project
 ```
 
 ## Upload translations
 
 ```shell
 poeditorial upload
+poeditorial upload test-project # upload only test-project
 ```
 

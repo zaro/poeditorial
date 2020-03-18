@@ -13,9 +13,9 @@ const rp = require('request-promise-native').defaults({
 
 const argv = require('yargs')
     .usage('Usage: $0 <command> [options]')
-    .command('list', 'List projects')
-    .command('export', 'Get translations from POEditor')
-    .command('upload', 'Upload translations to POEditor')
+    .command('list [projects...]', 'List projects')
+    .command('export [projects...]', 'Get translations from POEditor')
+    .command('upload [projects...]', 'Upload translations to POEditor')
     .example('$0 export', 'Export files from POEditor')
     .demandCommand()
     .boolean('all')
@@ -67,6 +67,10 @@ function getConfig(){
     const basePath = path.dirname(filepath);
     const normalizedConfig = {};
     for(const [projectName, projectConfig] of Object.entries(config)){
+        if (argv.projects && !argv.projects.includes(projectName)) {
+            continue;
+        }
+
         if(!('languages' in projectConfig)) {
             console.error(`No languages defined for project ${projectName}`)
             process.exit(1)
@@ -204,6 +208,7 @@ const commands = {
         const projects = await listProjects()
 
         let wait30s = false;
+        const validUpdatingModes = ['terms', 'terms_translations', 'translations'];
         for(const [projectName, projectConfig] of Object.entries(config)){
             for(const [language, languageConfig] of Object.entries(projectConfig.languages)){
                 const source = getDownloadPath(languageConfig.file);
@@ -214,6 +219,10 @@ const commands = {
                 const projectId = projects[projectName] && projects[projectName].id
                 if(!projectId){
                     console.log(`[${projectName}] Ignoring ${source} project doesn't exists`)
+                }
+                if(!validUpdatingModes.includes(languageConfig.updating)) {
+                    console.log(`[${projectName}] Skip ${source} with mode ${languageConfig.updating}`);
+                    continue;
                 }
                 if(wait30s){
                     console.log(`Sleep 30s ...`);

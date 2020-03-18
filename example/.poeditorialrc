@@ -7,3 +7,6 @@ test-project:
       file: en.json
       updating: terms_translations
     de: de.json
+    fr:
+      file: fr.json
+      updating: skip
