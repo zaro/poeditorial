@@ -129,18 +129,18 @@ async function exportFileUrl(projectId, language, type='key_value_json'){
     }).then(response => response.result.url);
 }
 
-async function uploadFile(projectId, language, filePath, params) {
+async function uploadFile(projectId, language, filePath, updating, optionalParams) {
     const file = fs.createReadStream(filePath);
     return poEditor('/projects/upload', {
         id: projectId,
         updating,
         language,
         file,
-        overwrite: params?.overwrite || 0,
-        sync_terms: params?.sync_terms || 0,
-        tags: params?.tags,
-        read_from_source: params?.read_from_source || 0,
-        fuzzy_trigger: params?.fuzzy_trigger || 0
+        overwrite: optionalParams?.overwrite || 0,
+        sync_terms: optionalParams?.sync_terms || 0,
+        tags: optionalParams?.tags,
+        read_from_source: optionalParams?.read_from_source || 0,
+        fuzzy_trigger: optionalParams?.fuzzy_trigger || 0
     }).then(response => response.result);
 }
 
@@ -233,7 +233,7 @@ const commands = {
                 }
                 console.log(`[${projectName}] Upload ${source} with mode ${languageConfig.updating}`);
                 try {
-                    const result = await uploadFile(projectId, language, source, languageConfig.updating, languageConfig.params);
+                    const result = await uploadFile(projectId, language, source, languageConfig.updating, languageConfig.uploadOptionalParams);
                     wait30s = true;
                 } catch(error) {
                     console.error('Upload failed!', error)
