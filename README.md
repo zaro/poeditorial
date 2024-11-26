@@ -19,12 +19,24 @@ The general configuration looks like this :
     "defaults":{
       "format": "key_value_json",
       "updating" : "terms",
+      "params": {
+        "uploadOptionalParams": {
+          "overwrite": 0,
+          "sync_terms": 0,
+          "tags": "",
+          "read_from_source": 0,
+          "fuzzy_trigger": 0
+        }
+      }
     },
     "languages":{
       "languageKey1": "translationFilePath1",
       "languageKey2": {
         "updating" : "terms_translations",
-        "file": "translationFilePath2"
+        "file": "translationFilePath2",
+        "uploadOptionalParams": {
+          ...
+        }
       }
       }
   },
@@ -33,6 +45,7 @@ The general configuration looks like this :
 ```
 For supported formats check : https://poeditor.com/docs/api#projects_export
 Supported updating values are here : https://poeditor.com/docs/api#projects_upload
+For supported `uploadOptionalParams` check: https://poeditor.com/docs/api#projects_upload
 
 File paths can be absolute or relative to the directory where configuration is found.
 
@@ -47,6 +60,12 @@ test-project:
     en:
       file: en.json
       updating: terms_translations
+      uploadOptionalParams:
+        overwrite: 0
+        sync_terms: 0
+        tags: ""
+        read_from_source: 0
+        fuzzy_trigger: 0
     de: de.json
     fr:
       file: fr.json
