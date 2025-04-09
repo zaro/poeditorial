@@ -151,7 +151,7 @@ async function downloadFile(url, destination = undefined) {
 
     if(destination){
         p.then( response => {
-            fs.writeFileSync(destination, JSON.stringify(response, null, 4));
+            fs.writeFileSync(destination, response);
             return response;
         })
     }
