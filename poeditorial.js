@@ -147,10 +147,11 @@ async function uploadFile(projectId, language, filePath, updating, optionalParam
 async function downloadFile(url, destination = undefined) {
     const p = rp.get(url, {
         baseUrl: null,
-    })
+        json: false
+    });
 
     if(destination){
-        p.then( response => {
+        p.then(response => {
             fs.writeFileSync(destination, response);
             return response;
         })
