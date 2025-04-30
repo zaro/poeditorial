@@ -6,10 +6,10 @@ const { cosmiconfigSync } = require('cosmiconfig');
 const MODULE_NAME = 'poeditorial';
 const WAIT_BETWEEN_UPLOADS_SECONDS = 30;
 
-const rp = require('request-promise-native').defaults({
-    baseUrl: 'https://api.poeditor.com/v2',
-    json: true,
-})
+const fetch = require('node-fetch');
+const FormData = require('form-data');
+
+const POEDITOR_API_BASE = 'https://api.poeditor.com/v2';
 
 const argv = require('yargs')
     .usage('Usage: $0 <command> [options]')
@@ -41,21 +41,23 @@ const argv = require('yargs')
 
 function poEditor(url, data={}) {
     data.api_token = argv.accessToken;
-    const params = new URLSearchParams();
-    for( const [k,v] of Object.entries(data)){
-        params.append(k, v);
+    const form = new FormData();
+    for (const [k, v] of Object.entries(data)) {
+        form.append(k, v);
     }
-    return rp.post({
-        url,
-        formData: data
-    }).then(response => {
-        if(response.response && response.response.status == 'success'){
-            return response;
-        }
-        throw response;
+    return fetch(`${POEDITOR_API_BASE}${url}`, {
+        method: 'POST',
+        body: form,
+        headers: form.getHeaders()
     })
+    .then(async response => {
+        const json = await response.json();
+        if(json.response && json.response.status == 'success'){
+            return json;
+        }
+        throw json;
+    });
 }
-
 
 function getConfig(){
     const foundConfig = cosmiconfigSync(MODULE_NAME).search();
@@ -130,33 +132,39 @@ async function exportFileUrl(projectId, language, type='key_value_json'){
 }
 
 async function uploadFile(projectId, language, filePath, updating, optionalParams) {
-    const file = fs.createReadStream(filePath);
-    return poEditor('/projects/upload', {
-        id: projectId,
-        updating,
-        language,
-        file,
-        overwrite: optionalParams?.overwrite || 0,
-        sync_terms: optionalParams?.sync_terms || 0,
-        tags: optionalParams?.tags,
-        read_from_source: optionalParams?.read_from_source || 0,
-        fuzzy_trigger: optionalParams?.fuzzy_trigger || 0
-    }).then(response => response.result);
+    const form = new FormData();
+    form.append('api_token', argv.accessToken);
+    form.append('id', projectId);
+    form.append('updating', updating);
+    form.append('language', language);
+    form.append('file', fs.createReadStream(filePath));
+    form.append('overwrite', optionalParams?.overwrite || 0);
+    form.append('sync_terms', optionalParams?.sync_terms || 0);
+    if (optionalParams?.tags) form.append('tags', optionalParams.tags);
+    form.append('read_from_source', optionalParams?.read_from_source || 0);
+    form.append('fuzzy_trigger', optionalParams?.fuzzy_trigger || 0);
+
+    const response = await fetch(`${POEDITOR_API_BASE}/projects/upload`, {
+        method: 'POST',
+        body: form,
+        headers: form.getHeaders()
+    });
+    const json = await response.json();
+    if(json.response && json.response.status == 'success'){
+        return json.result;
+    }
+    throw json;
 }
 
 async function downloadFile(url, destination = undefined) {
-    const p = rp.get(url, {
-        baseUrl: null,
-        json: false
-    });
+    const response = await fetch(url);
+    const buffer = await response.buffer();
 
     if(destination){
-        p.then(response => {
-            fs.writeFileSync(destination, response);
-            return response;
-        })
+        fs.writeFileSync(destination, buffer);
+        return buffer;
     }
-    return p;
+    return buffer;
 }
 
 const commands = {
