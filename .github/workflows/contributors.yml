@@ -3,7 +3,7 @@ name: Add contributor
 on:
   push:
     branches:
-      - "master"
+      - 'master'
 
 jobs:
   add-contributor:

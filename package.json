@@ -23,7 +23,7 @@
   "scripts": {
     "build": "bun build src/index.ts --outdir=dist --target=node --packages external --splitting",
     "lint": "eslint --ext .ts ./src --fix",
-    "format": "prettier --log-level warn --write \"**/*.{ts,md,json}\"",
+    "format": "prettier --log-level warn --write \"**/*.{ts,md,json,yml}\"",
     "test": "bun test"
   },
   "devDependencies": {

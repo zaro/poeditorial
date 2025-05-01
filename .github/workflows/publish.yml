@@ -3,9 +3,9 @@ name: Publish Package
 on:
   push:
     branches:
-      - "!*"
+      - '!*'
     tags:
-      - "v*"
+      - 'v*'
 
 jobs:
   publish-npm:
@@ -17,21 +17,12 @@ jobs:
           fetch-depth: 0
           submodules: recursive
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-
-      # Update package.json version to the tag version
-      - run: npm version "${GITHUB_REF:11}" --no-git-tag-version
-      
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
       - run: bun run build
       - run: bun publish --access public
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Update CHANGELOG
         id: changelog
@@ -59,7 +50,7 @@ jobs:
           git config --local user.email "zarrro@gmail.com"
           git config --local user.name "zaro"
           git commit -m "Release: ${GITHUB_REF:11}" -a
-      
+
       - name: Push changes
         continue-on-error: true
         uses: ad-m/github-push-action@master

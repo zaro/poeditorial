@@ -17,8 +17,9 @@ We welcome contributions from the community! If you'd like to contribute to POEd
 follow these steps:
 
 1. Fork the repository
-2. Create your feature branch: `git checkout -b feature/my-new-feature`
-3. Commit your changes: `git commit -am 'Add some feature'`
+2. Create your feature branch from `master`: `git checkout -b feature/my-new-feature`
+3. Commit your changes: `git commit -am 'feat: Add some feature'`
+   [Conventional Commit messages](https://www.conventionalcommits.org/en/v1.0.0-beta.2/)
 4. Push to the branch: `git push origin feature/my-new-feature`
 5. Submit a pull request
 
