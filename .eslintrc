@@ -1,0 +1,124 @@
+{
+    "root": true,
+    "env": {
+      "node": true,
+      "es2021": true
+    },
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/recommended",
+      "plugin:prettier/recommended",
+      "plugin:import/errors",
+      "plugin:import/typescript",
+      "plugin:@typescript-eslint/eslint-recommended"
+    ],
+    "globals": {},
+    "overrides": [],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "ecmaVersion": "latest",
+      "sourceType": "module",
+      "project": "./tsconfig.json",
+      "tsconfigRootDir": "."
+    },
+    "plugins": ["@typescript-eslint", "simple-import-sort", "import"],
+    "settings": {
+      "import/resolver": {
+        "typescript": {
+          "alwaysTryTypes": true,
+          "project": "./tsconfig.json"
+        },
+        "node": {
+          "extensions": [".js", ".ts"]
+        }
+      },
+      "import/parsers": {
+        "@typescript-eslint/parser": [".ts"]
+      },
+      "import/extensions": [".js", ".ts"]
+    },
+    "rules": {
+      "no-unused-vars": "off", // Required by @typescript-eslint/no-unused-vars
+      "curly": "error",
+      "no-duplicate-imports": "off",
+      "padding-line-between-statements": [
+        "error",
+        {
+          "blankLine": "always",
+          "prev": ["class", "function"],
+          "next": "*"
+        },
+        {
+          "blankLine": "always",
+          "prev": "*",
+          "next": ["class", "function", "return", "try"]
+        },
+        {
+          "blankLine": "always",
+          "prev": ["import", "for", "if", "switch", "while"],
+          "next": ["const", "expression", "let"]
+        },
+        {
+          "blankLine": "always",
+          "prev": ["const", "expression", "let"],
+          "next": ["for", "if", "switch", "try", "while"]
+        },
+        {
+          "blankLine": "always",
+          "prev": ["const", "expression", "import", "let"],
+          "next": "export"
+        },
+        {
+          "blankLine": "always",
+          "prev": ["for", "switch", "while"],
+          "next": "if"
+        },
+        {
+          "blankLine": "always",
+          "prev": ["if", "switch", "while"],
+          "next": "for"
+        },
+        {
+          "blankLine": "always",
+          "prev": ["if", "for", "while"],
+          "next": "switch"
+        },
+        {
+          "blankLine": "always",
+          "prev": ["if", "for", "switch"],
+          "next": "while"
+        }
+      ],
+      /* @typescript-eslint */
+      "@typescript-eslint/consistent-type-imports": [
+        "error",
+        {
+          "prefer": "type-imports",
+          "disallowTypeAnnotations": true,
+          "fixStyle": "separate-type-imports"
+        }
+      ],
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          "vars": "all",
+          "varsIgnorePattern": "^_",
+          "args": "all",
+          "argsIgnorePattern": "^_"
+        }
+      ],
+      "@typescript-eslint/no-deprecated": "error",
+      "simple-import-sort/imports": "error",
+      "simple-import-sort/exports": "error",
+      "import/first": "error",
+      "import/newline-after-import": "error",
+      "import/no-duplicates": "error",
+      "import/no-unused-modules": ["warn", { "unusedExports": true, "ignoreExports": [] }],
+      "import/no-cycle": ["error", { "ignoreExternal": true }],
+      "import/no-default-export": "error",
+      "import/no-dynamic-require": "error",
+      "import/no-mutable-exports": "error",
+      "import/no-useless-path-segments": "error",
+      "import/no-self-import": "error"
+    }
+  }
