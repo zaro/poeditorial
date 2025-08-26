@@ -6,10 +6,7 @@ const { cosmiconfigSync } = require('cosmiconfig');
 const MODULE_NAME = 'poeditorial';
 const WAIT_BETWEEN_UPLOADS_SECONDS = 30;
 
-const rp = require('request-promise-native').defaults({
-    baseUrl: 'https://api.poeditor.com/v2',
-    json: true,
-})
+const axios = require('axios').create({ baseURL: 'https://api.poeditor.com/v2' });
 
 const argv = require('yargs')
     .usage('Usage: $0 <command> [options]')
@@ -35,25 +32,26 @@ const argv = require('yargs')
     .alias('h', 'help')
     .coerce({
         message: (val) => Array.isArray(val) ? val.join("\n") : val,
-        task: (taskIds) => taskIds.map(val => val.toString().replace(/^\#/, ''))
+        task: (taskIds) => taskIds.map(val => val.toString().replace(/^#/, ''))
     })
     .argv;
 
-function poEditor(url, data={}) {
+async function poEditor(url, data={}) {
     data.api_token = argv.accessToken;
-    const params = new URLSearchParams();
-    for( const [k,v] of Object.entries(data)){
-        params.append(k, v);
+
+    const form = new FormData();
+
+    for (const [k, v] of Object.entries(data)) {
+        form.append(k, v);
     }
-    return rp.post({
-        url,
-        formData: data
-    }).then(response => {
-        if(response.response && response.response.status == 'success'){
-            return response;
-        }
-        throw response;
-    })
+
+		try {
+			const response = await axios.post(url, form);
+
+			return response.data;
+		} catch (error) {
+			throw error;
+		}
 }
 
 
@@ -145,18 +143,15 @@ async function uploadFile(projectId, language, filePath, updating, optionalParam
 }
 
 async function downloadFile(url, destination = undefined) {
-    const p = rp.get(url, {
-        baseUrl: null,
-        json: false
-    });
+      const res = await axios.get(url, { responseType: 'arraybuffer' });
 
-    if(destination){
-        p.then(response => {
-            fs.writeFileSync(destination, response);
-            return response;
-        })
-    }
-    return p;
+      if (destination) {
+		      const dir = path.dirname(destination);
+		      fs.mkdirSync(dir, { recursive: true });
+          fs.writeFileSync(destination, res.data, {});
+      }
+
+      return res.data;
 }
 
 const commands = {
@@ -197,7 +192,7 @@ const commands = {
             )
         }
 
-        Promise.all(downloads).then(results => {
+        Promise.all(downloads).then(() => {
             console.log('All done.')
         }).catch(e => {
             console.error('Download failed!', e)
@@ -212,29 +207,38 @@ const commands = {
         const projects = await listProjects()
 
         let wait30s = false;
-        const validUpdatingModes = ['terms', 'terms_translations', 'translations'];
-        for(const [projectName, projectConfig] of Object.entries(config)){
+
+				const validUpdatingModes = ['terms', 'terms_translations', 'translations'];
+
+				for(const [projectName, projectConfig] of Object.entries(config)){
             for(const [language, languageConfig] of Object.entries(projectConfig.languages)){
                 const source = getDownloadPath(languageConfig.file);
-                if(!fs.existsSync(source)){
+
+								if(!fs.existsSync(source)){
                     console.error(source, "doesn't exist");
                     process.exit(1)
                 }
-                const projectId = projects[projectName] && projects[projectName].id
-                if(!projectId){
+
+								const projectId = projects[projectName] && projects[projectName].id
+
+	              if(!projectId){
                     console.log(`[${projectName}] Ignoring ${source} project doesn't exists`)
                 }
-                if(!validUpdatingModes.includes(languageConfig.updating)) {
+
+								if(!validUpdatingModes.includes(languageConfig.updating)) {
                     console.log(`[${projectName}] Skip ${source} with mode ${languageConfig.updating}`);
                     continue;
                 }
-                if(wait30s){
+
+								if(wait30s){
                     console.log(`Sleep 30s ...`);
                     await new Promise(resolve => setTimeout(resolve, WAIT_BETWEEN_UPLOADS_SECONDS * 1000));
                 }
-                console.log(`[${projectName}] Upload ${source} with mode ${languageConfig.updating}`);
-                try {
-                    const result = await uploadFile(projectId, language, source, languageConfig.updating, languageConfig.uploadOptionalParams);
+
+								console.log(`[${projectName}] Upload ${source} with mode ${languageConfig.updating}`);
+
+								try {
+                    await uploadFile(projectId, language, source, languageConfig.updating, languageConfig.uploadOptionalParams);
                     wait30s = true;
                 } catch(error) {
                     console.error('Upload failed!', error)
