@@ -21,9 +21,8 @@
     "url": "https://github.com/zaro/poeditorial.git"
   },
   "dependencies": {
+    "axios": "^1.11.0",
     "cosmiconfig": "^6.0.0",
-    "request": "^2.88.2",
-    "request-promise-native": "^1.0.8",
     "yargs": "^15.1.0"
   }
 }
