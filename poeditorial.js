@@ -119,12 +119,16 @@ async function listProjects(){
     )
 }
 
-async function exportFileUrl(projectId, language, type='key_value_json'){
-    return poEditor('/projects/export', {
+async function exportFileUrl(projectId, language, type='key_value_json', optionalParams){
+    const params = {
         id: projectId,
         language,
-        type
-    }).then(response => response.result.url);
+        type,
+    }
+    for (let key in optionalParams) {
+        params[key] = optionalParams[key];
+    }
+    return poEditor('/projects/export', params).then(response => response.result.url);
 }
 
 async function uploadFile(projectId, language, filePath, updating, optionalParams) {
@@ -176,7 +180,7 @@ const commands = {
             const project = projects[projectName];
             for(const [language, languageConfig] of Object.entries(projectConfig.languages)){
                 exportUrlsPromises.push(
-                    exportFileUrl(project.id, language, languageConfig.format).then(
+                    exportFileUrl(project.id, language, languageConfig.format, languageConfig.exportOptionalParams).then(
                         url => ({id: project.id, name: project.name, url, language})
                     )
                 )
