@@ -3,6 +3,7 @@
 const path = require('path');
 const fs = require('fs');
 const { cosmiconfigSync } = require('cosmiconfig');
+const FormData = require('form-data');
 const MODULE_NAME = 'poeditorial';
 const WAIT_BETWEEN_UPLOADS_SECONDS = 30;
 
@@ -46,7 +47,7 @@ async function poEditor(url, data={}) {
     }
 
 		try {
-			const response = await axios.post(url, form);
+			const response = await axios.post(url, form, { headers: form.getHeaders() || {} });
 
 			return response.data;
 		} catch (error) {
