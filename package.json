@@ -1,6 +1,6 @@
 {
   "name": "poeditorial",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Minimal CLI tool for poeditor.com",
   "main": "index.js",
   "scripts": {
